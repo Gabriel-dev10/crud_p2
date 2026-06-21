@@ -92,7 +92,10 @@ function Resources() {
       const data = await resourcesService.getAll(resource)
       setResources(Array.isArray(data) ? data : [])
     } catch (error) {
-      setAlert({ type: 'error', message: `Erro ao carregar ${config.label.toLowerCase()}` })
+      setAlert({
+        type: 'error',
+        message: error.response?.data?.message || error.response?.data?.error || `Erro ao carregar ${config.label.toLowerCase()}`
+      })
     } finally {
       setLoading(false)
     }

@@ -16,15 +16,19 @@ const protect = async (req, res, next) => {
         attributes: { exclude: ['senha'] }
       });
 
+      if (!req.user) {
+        return res.status(401).json({ error: 'Não autorizado, usuário não encontrado' });
+      }
+
       next();
     } catch (error) {
       console.error(error);
-      res.status(401).json({ error: 'Não autorizado, token falhou' });
+      return res.status(401).json({ error: 'Não autorizado, token falhou' });
     }
   }
 
   if (!token) {
-    res.status(401).json({ error: 'Não autorizado, sem token' });
+    return res.status(401).json({ error: 'Não autorizado, sem token' });
   }
 };
 

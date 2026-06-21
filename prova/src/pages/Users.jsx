@@ -25,7 +25,10 @@ function Users() {
       const data = await usersService.getAll()
       setUsers(Array.isArray(data) ? data : [])
     } catch (error) {
-      setAlert({ type: 'error', message: 'Erro ao carregar usuários' })
+      setAlert({
+        type: 'error',
+        message: error.response?.data?.message || error.response?.data?.error || 'Erro ao carregar usuários'
+      })
     } finally {
       setLoading(false)
     }
@@ -46,7 +49,7 @@ function Users() {
     } catch (error) {
       setAlert({ 
         type: 'error', 
-        message: error.response?.data?.message || 'Erro ao salvar usuário'
+        message: error.response?.data?.message || error.response?.data?.error || 'Erro ao salvar usuário'
       })
     }
   }
@@ -71,7 +74,7 @@ function Users() {
       } catch (error) {
         setAlert({ 
           type: 'error', 
-          message: error.response?.data?.message || 'Erro ao deletar usuário'
+          message: error.response?.data?.message || error.response?.data?.error || 'Erro ao deletar usuário'
         })
       }
     }

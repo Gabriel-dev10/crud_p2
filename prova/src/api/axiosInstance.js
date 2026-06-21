@@ -9,11 +9,31 @@ const axiosInstance = axios.create({
   },
 })
 
+const isAuthEndpoint = (url = '') => url.includes('/auth/login') || url.includes('/auth/register')
+
+const clearSessionAndRedirect = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+
+  if (window.location.pathname !== '/login') {
+    window.location.href = '/login'
+  }
+}
+
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    } else if (!isAuthEndpoint(config.url)) {
+      clearSessionAndRedirect()
+      return Promise.reject({
+        isAuthError: true,
+        response: {
+          status: 401,
+          data: { message: 'Sessão expirada. Faça login novamente.' },
+        },
+      })
     }
     return config
   },
@@ -23,12 +43,10 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isLoginRequest = error.config?.url?.includes('/auth/login')
+    const isAuthRequest = isAuthEndpoint(error.config?.url)
 
-    if (error.response?.status === 401 && !isLoginRequest) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+    if (error.response?.status === 401 && !isAuthRequest) {
+      clearSessionAndRedirect()
     }
     return Promise.reject(error)
   }

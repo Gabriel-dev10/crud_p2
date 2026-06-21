@@ -1,11 +1,24 @@
 import axiosInstance from './axiosInstance'
 
+const getUserFromResponse = (data) => {
+  if (data.user) return data.user
+  if (data.id || data.email) {
+    return {
+      id: data.id,
+      name: data.name || data.nome,
+      nome: data.nome || data.name,
+      email: data.email,
+    }
+  }
+  return null
+}
+
 const authService = {
   login: async (email, password) => {
     const response = await axiosInstance.post('/auth/login', { email, password })
     if (response.data.token) {
       localStorage.setItem('token', response.data.token)
-      localStorage.setItem('user', JSON.stringify(response.data.user))
+      localStorage.setItem('user', JSON.stringify(getUserFromResponse(response.data)))
     }
     return response.data
   },
@@ -26,6 +39,10 @@ const authService = {
 
   register: async (userData) => {
     const response = await axiosInstance.post('/auth/register', userData)
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token)
+      localStorage.setItem('user', JSON.stringify(getUserFromResponse(response.data)))
+    }
     return response.data
   },
 }

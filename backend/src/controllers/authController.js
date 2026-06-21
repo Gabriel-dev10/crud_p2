@@ -7,9 +7,18 @@ const generateToken = (id) => {
   });
 };
 
+const serializeUser = (user) => ({
+  id: user.id,
+  name: user.nome,
+  nome: user.nome,
+  email: user.email
+});
+
 exports.register = async (req, res) => {
   try {
-    const { nome, email, senha } = req.body;
+    const nome = req.body.nome || req.body.name;
+    const senha = req.body.senha || req.body.password;
+    const { email } = req.body;
     
     let user = await User.findOne({ where: { email } });
     if (user) {
@@ -17,15 +26,15 @@ exports.register = async (req, res) => {
     }
 
     user = await User.create({ nome, email, senha });
+    const serializedUser = serializeUser(user);
 
     res.status(201).json({
-      id: user.id,
-      nome: user.nome,
-      email: user.email,
+      ...serializedUser,
+      user: serializedUser,
       token: generateToken(user.id)
     });
   } catch (error) {
-    res.status(500).json({ error: 'Erro no registro' });
+    res.status(500).json({ error: error.message || 'Erro no registro' });
   }
 };
 
@@ -39,12 +48,7 @@ exports.login = async (req, res) => {
     if (user && (await user.matchPassword(passwordToCheck))) {
       res.json({
         token: generateToken(user.id),
-        user: {
-          id: user.id,
-          name: user.nome,
-          nome: user.nome,
-          email: user.email
-        }
+        user: serializeUser(user)
       });
     } else {
       res.status(401).json({ message: 'Email ou senha inválidos' });
