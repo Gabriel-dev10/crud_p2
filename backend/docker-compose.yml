@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGO_URI=mongodb://mongo:27017/trabalho_p2
+      - DB_NAME=trabalhop2
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_HOST=postgres
+      - DB_DIALECT=postgres
+      - JWT_SECRET=supersecret123
+    depends_on:
+      - mongo
+      - postgres
+    restart: on-failure
+
+  mongo:
+    image: mongo:6-jammy
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=trabalhop2
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  mongo_data:
+  pg_data:
